@@ -8,7 +8,7 @@ from multiprocessing import Pool
 
 
 class GMM(object):
-    def __init__(self, clusters, data, feature_size, epsilon=0.05, max_iterations=200, initializations=100, parallel=True, path='gmm_result/'):
+    def __init__(self, clusters, data, feature_size, epsilon=0.05, max_iterations=200, initializations=100, parallel=True, path=''):
         # random.seed(a=2018)
         self.initializations = initializations
         self.feature_size = feature_size
@@ -19,13 +19,13 @@ class GMM(object):
 
         self.train_data = data
 
+        # This is the file that specifies each data point belongs to which group.
         self.final_prediction_file_name = path + 'probability_{}.npy'.format(self.num_of_clusters)
+        # This file saves the parameter for the best model predicted.
         self.model_param_file_name = path + 'best_model_param_{}.json'.format(self.num_of_clusters)
 
         print("input features: {}".format(len(data)))
-        # for uttr in data:
-        #     for frame in uttr:
-        #         self.train_data.append(frame / np.linalg.norm(frame))
+
 
     def initialize(self):
 
@@ -189,14 +189,14 @@ class GMM(object):
             else:
                 previous_cov_det_array = np.array([np.linalg.norm(np.diag(models_param['cov'][i])) for i in range(self.num_of_clusters)])
 
-            start = time.time()
+            # start = time.time()
             posteriors = self.E_step(data=self.train_data, models_param=models_param)
 
-            print("E_step: {}s".format(time.time() - start))
-            start = time.time()
+            # print("E_step: {}s".format(time.time() - start))
+            # start = time.time()
             models_param = self.M_step(posteriors=posteriors, models_param=models_param)
 
-            print("M_step: {}s".format(time.time() - start))
+            # print("M_step: {}s".format(time.time() - start))
 
             current_mean_array = np.array([np.linalg.norm(models_param['mean'][i, :]) for i in range(self.num_of_clusters)])
             current_weight_array = np.array(models_param['weight'])
@@ -222,40 +222,28 @@ class GMM(object):
 
 
 
+"""
+this method should read all the data and forms a m by n matrix.
+m is the number of data points， n is the dimension of each data point.
 
-def load_data(feature_size, frame_level=True, normalize=False):
+For example, let's say the input is MFCC sequence of multiple audio files.
+Suppose we have one MFCC sequence per file. m will be the number of files
+and n represent the dimension of single MFCC sequence.
+
+the input should be numpy array, with shape(m, n)
+"""
+def load_data():
 
     input_train_features = []
-    length = []
-    for level in ['clean', 'MWC20', 'MWC15', 'MWC10', 'MWC5', 'MWC0']:
-
-        train_dir = 'data/MFCC/{}.npy'.format(level)
-        print('looping through level {}'.format(level))
-        features = np.load(train_dir)
-        if frame_level:
-            for uttr in features:
-                input_train_features.extend([frame[0:feature_size] for frame in uttr])
-            # length.append(len(uttr))
-        else:
-            input_train_features.extend(features)
-        # break
-
-    if normalize:
-        temp = input_train_features
-        input_train_features = []
-        for uttr in temp:
-            for frame in uttr:
-                input_train_features.append(frame / np.linalg.norm(frame))
+    #TODO add code to import raw data.
 
     return input_train_features
 
 
 if __name__ == '__main__':
 
-    FEATURE_SIZE = 21
-    # interpret_data(False)
-    # load()
-    # plot_from_data()
+    #TODO modify the feature size
+    FEATURE_SIZE = 0
     num_initializations = int(input("Number of initializations? >>> "))
     if_parallel = input("would you like to do it parallel? >>> ").lower().startswith('y')
 
@@ -267,15 +255,11 @@ if __name__ == '__main__':
     range_ = list(range(start, end))
     print("looping thourgh {}".format(range_))
 
-    features = load_data(FEATURE_SIZE)
+    features = load_data()
 
 
     for i in range_:
         print("Running {} clusters...".format(i))
         model = GMM(i, data=features, feature_size=FEATURE_SIZE, initializations=num_initializations, parallel=if_parallel)
         model.fixed_cluster_run()
-    # model.initialize()
-    # model.single_run()
-    # model.predict()
-    # model.plot()
     pass

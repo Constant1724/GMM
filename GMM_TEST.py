@@ -1,14 +1,17 @@
 import numpy as np
 import GMM_PARALLISM
-import json
-from sklearn.mixture import GaussianMixture
-from sklearn.mixture import BayesianGaussianMixture
+
 from sklearn.preprocessing import normalize
-clusters = 2
-generate_use_mean = np.linspace(10,100,clusters)
+"""
+Below is parameter to generate random normal distributed data and run GMM against it
+feel free to change the parameter to play around.
+"""
+
+clusters = 10
+generate_use_mean = np.linspace(0,50,clusters)
 generate_use_sigma = [5] * clusters
 data = 1000
-dimensions = 10
+dimensions = 1
 
 def genrate_data():
     samples = []
@@ -19,20 +22,17 @@ def genrate_data():
 
 def test():
     samples = np.load("temp.npy")
-    # zero_mean_samples = samples - samples.mean()
-    # normalized = normalize(zero_mean_samples, norm='max', axis=0)
     model = GMM_PARALLISM.GMM(clusters=clusters, data=samples, feature_size=dimensions, max_iterations=300, initializations=15, epsilon=1e-5)
     # model.single_run()
     return model.fixed_cluster_run()
 
 
 
-def plot_from_data(mean, variance, weight,if_normalized=False):
+def plot_from_data(mean, weight, variance,if_normalized=False):
     import matplotlib.pyplot as plt
     import numpy as np
     import matplotlib.mlab as mlab
     import math
-    clusters = 6
 
     mu = mean
     assert len(mean) == len(variance) == len(weight)
@@ -63,24 +63,24 @@ def plot_from_data(mean, variance, weight,if_normalized=False):
     plt.show()
 
 
-def sklearn_result():
-    desired_clusters = 15
-    model = BayesianGaussianMixture(n_components=desired_clusters, init_params='kmeans', max_iter=200, n_init=10)
-    # samples = np.load("temp.npy")
-    samples = GMM_PARALLISM.load_data(feature_size=21)
-
-    model.fit(samples)
-    np.save('gmm_result/probability_sklearn.npy', model.predict(samples))
-    print(model.weights_)
-    # plot_from_data(model.means_, model.covariances_.reshape(desired_clusters,), model.weights_)
-    # print("sklearn_result")
-    # print("Mean: {}".format(model.means_))
-    # print("Cov: {}".format(model.covariances_.reshape(clusters,)))
-    # print("done")
+# def sklearn_result():
+#     desired_clusters = 15
+#     model = BayesianGaussianMixture(n_components=desired_clusters, init_params='kmeans', max_iter=200, n_init=10)
+#     # samples = np.load("temp.npy")
+#     samples = GMM_PARALLISM.load_data(feature_size=21)
+#
+#     model.fit(samples)
+#     np.save('gmm_result/probability_sklearn.npy', model.predict(samples))
+#     print(model.weights_)
+#     # plot_from_data(model.means_, model.covariances_.reshape(desired_clusters,), model.weights_)
+#     # print("sklearn_result")
+#     # print("Mean: {}".format(model.means_))
+#     # print("Cov: {}".format(model.covariances_.reshape(clusters,)))
+#     # print("done")
 
 if __name__ == '__main__':
 
-    # genrate_data()
+    genrate_data()
     mean, weight, cov = test()
     plot_from_data(mean, weight, cov, if_normalized=False)
 # plot_from_data([114.40401017576025, 115.82880710191789, 125.79893553941183, 120.73827401152765, 117.65187338830759, 57.22687686904379],
